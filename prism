@@ -1,0 +1,78 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <utility>
+
+using namespace std;
+
+// Pair format: {weight, vertex}
+typedef pair<int, int> pii;
+
+void primMST(int V, vector<vector<pii>>& adj) {
+    // Min-heap to pick the edge with the smallest weight
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+
+    vector<int> key(V, 1e9);      // Minimum edge weight to reach each vertex
+    vector<int> parent(V, -1);    // Stores the MST structure
+    vector<bool> inMST(V, false); // Tracks vertices already included in MST
+
+    // Start from vertex 0
+    int startNode = 0;
+    key[startNode] = 0;
+    pq.push({0, startNode});
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+
+        // Skip if the vertex is already in the MST
+        if (inMST[u]) continue;
+        inMST[u] = true;
+
+        // Explore all adjacent vertices
+        for (auto& edge : adj[u]) {
+            int v = edge.first;
+            int weight = edge.second;
+
+            // If v is not in MST and weight of (u, v) is smaller than current key[v]
+            if (!inMST[v] && weight < key[v]) {
+                key[v] = weight;
+                parent[v] = u;
+                pq.push({key[v], v});
+            }
+        }
+    }
+
+    // Print the MST edges and calculate total weight
+    int totalWeight = 0;
+    cout << "Edge \tWeight\n";
+    for (int i = 1; i < V; i++) {
+        cout << parent[i] << " - " << i << " \t" << key[i] << "\n";
+        totalWeight += key[i];
+    }
+    cout << "Total MST Weight: " << totalWeight << "\n";
+}
+
+int main() {
+    int V = 5; // Number of vertices (0 to 4)
+    vector<vector<pii>> adj(V);
+
+    // Helper lambda to add undirected edges
+    auto addEdge = [&](int u, int v, int w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    };
+
+    // Sample Graph
+    addEdge(0, 1, 2);
+    addEdge(0, 3, 6);
+    addEdge(1, 2, 3);
+    addEdge(1, 3, 8);
+    addEdge(1, 4, 5);
+    addEdge(2, 4, 7);
+    addEdge(3, 4, 9);
+
+    primMST(V, adj);
+
+    return 0;
+}
